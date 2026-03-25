@@ -51,7 +51,7 @@ public class homePage {
         contentPanel.add(contentHeaderLabel, BorderLayout.NORTH);
 
         // Radio buttons to select city for weather forecast
-        JPanel radioPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        JPanel radioPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         radioPanel.setBackground(appTheme.backgroundColour);
 
         ButtonGroup cityGroup = new ButtonGroup();
