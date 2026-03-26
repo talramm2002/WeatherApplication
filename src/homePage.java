@@ -1,10 +1,7 @@
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
-import java.util.concurrent.Flow;
-
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -68,7 +65,6 @@ public class homePage {
                 "Melbourne",
                 "Newcastle",
                 "Perth",
-                "Sunshine Coast",
                 "Sydney",
                 "Townsville",
                 "Wollongong"
@@ -126,6 +122,7 @@ public class homePage {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 new adminLogin();
+                frame.dispose();
             }
 
         });

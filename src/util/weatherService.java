@@ -6,22 +6,51 @@ import com.google.gson.JsonArray;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 public class weatherService {
+
+    // Mapping of city names to their latitude and longitude coordinates for API
+    // requests
+    private static final Map<String, double[]> cityGeoHash = new HashMap<>();
+
+    static {
+        cityGeoHash.put("Adelaide", new double[] { -34.9285, 138.6007 });
+        cityGeoHash.put("Brisbane", new double[] { -27.4698, 153.0251 });
+        cityGeoHash.put("Cairns", new double[] { -16.9186, 145.7781 });
+        cityGeoHash.put("Canberra", new double[] { -35.2809, 149.1300 });
+        cityGeoHash.put("Darwin", new double[] { -12.4634, 130.8456 });
+        cityGeoHash.put("Esperance", new double[] { -33.8612, 121.8914 });
+        cityGeoHash.put("Gold Coast", new double[] { -28.0167, 153.4000 });
+        cityGeoHash.put("Hobart", new double[] { -42.8821, 147.3272 });
+        cityGeoHash.put("Melbourne", new double[] { -37.8136, 144.9631 });
+        cityGeoHash.put("Newcastle", new double[] { -32.9283, 151.7817 });
+        cityGeoHash.put("Perth", new double[] { -31.9505, 115.8605 });
+        cityGeoHash.put("Sunshine Coast", new double[] { -26.6500, 153.0667 });
+        cityGeoHash.put("Sydney", new double[] { -33.8688, 151.2093 });
+        cityGeoHash.put("Townsville", new double[] { -19.2590, 146.8169 });
+        cityGeoHash.put("Wollongong", new double[] { -34.4278, 150.8931 });
+    }
+
+    // Data class to hold weather information retrieved from the API
     public static class WeatherData {
         public double currentTemp;
         public int humidity;
         public String[] dailyDates;
         public double[] dailyMaxTemps;
         public double[] dailyMinTemps;
-        public int[] rainChance;
+        public double[] rainChance;
     }
 
+    // Helper method to make an HTTP GET request and return the response as a string
     private static String makeRequest(String urlString) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Accept", "application/json");
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(10000);
 
         Scanner scanner = new Scanner(connection.getInputStream());
         StringBuilder response = new StringBuilder();
@@ -32,64 +61,64 @@ public class weatherService {
         return response.toString();
     }
 
-    private static String getGeoHash(String city) throws Exception {
-        String urlString = "https://api.weather.bom.gov.au/v1/locations?search="
-                + city.replace(" ", "%20");
-        String response = makeRequest(urlString);
-
-        JsonObject json = JsonParser.parseString(response).getAsJsonObject();
-        JsonArray data = json.getAsJsonArray("data");
-
-        if (data.size() == 0) {
-            return null;
-        }
-
-        return data.get(0).getAsJsonObject().get("geohash").getAsString();
-    }
-
+    // Main method to retrieve weather data for a given city using the Open-Meteo
+    // API
     public static WeatherData getWeather(String city) {
         try {
-            String geohash = getGeoHash(city);
-            if (geohash == null) {
+            // Look up coordinates for the city; if not found, return null
+            double[] coords = cityGeoHash.get(city);
+            if (coords == null)
                 return null;
-            }
 
-            String obResponse = makeRequest("https://api.weather.bom.gov.au/v1/locations/" + geohash + "/observations");
+            double lat = coords[0];
+            double lon = coords[1];
 
-            String forecastResponse = makeRequest(
-                    "https://api.weather.bom.gov.au/v1/locations/" + geohash + "/forecasts/daily");
+            // Construct API request URL with query parameters for current weather and 7 day
+            // forecast
+            String response = makeRequest(
+                    "https://api.open-meteo.com/v1/forecast"
+                            + "?latitude=" + lat
+                            + "&longitude=" + lon
+                            + "&current=temperature_2m,relative_humidity_2m"
+                            + "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+                            + "&timezone=auto"
+                            + "&forecast_days=7");
 
             WeatherData data = new WeatherData();
 
-            JsonObject obsJson = JsonParser.parseString(obResponse).getAsJsonObject();
-            JsonObject obs = obsJson.getAsJsonObject("data");
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
 
-            data.currentTemp = obs.get("temp").getAsDouble();
-            data.humidity = obs.get("humidity").getAsInt();
+            // Parse from "current" object
+            JsonObject current = json.getAsJsonObject("current");
+            data.currentTemp = current.get("temperature_2m").getAsDouble();
+            data.humidity = current.get("relative_humidity_2m").getAsInt();
 
-            JsonObject forecastJson = JsonParser.parseString(forecastResponse).getAsJsonObject();
-            JsonArray days = forecastJson.getAsJsonArray("data");
-            int numDays = 7;
+            // Parse from "daily" object
+            JsonObject daily = json.getAsJsonObject("daily");
+            JsonArray dates = daily.getAsJsonArray("time");
+            JsonArray maxTemps = daily.getAsJsonArray("temperature_2m_max");
+            JsonArray minTemps = daily.getAsJsonArray("temperature_2m_min");
+            JsonArray rain = daily.getAsJsonArray("precipitation_probability_max");
+
+            int numDays = dates.size();
             data.dailyDates = new String[numDays];
             data.dailyMaxTemps = new double[numDays];
             data.dailyMinTemps = new double[numDays];
-            data.rainChance = new int[numDays];
+            data.rainChance = new double[numDays];
 
+            // Each field is its own array, not nested inside day objects
             for (int i = 0; i < numDays; i++) {
-                JsonObject day = days.get(i).getAsJsonObject();
-                data.dailyDates[i] = day.get("date").getAsString();
-                data.dailyMaxTemps[i] = day.get("max_temp").getAsDouble();
-                data.dailyMinTemps[i] = day.get("min_temp").getAsDouble();
-                data.rainChance[i] = day.get("rain_chance").getAsInt();
+                data.dailyDates[i] = dates.get(i).getAsString();
+                data.dailyMaxTemps[i] = maxTemps.get(i).getAsDouble();
+                data.dailyMinTemps[i] = minTemps.get(i).getAsDouble();
+                data.rainChance[i] = rain.get(i).getAsDouble();
             }
+
             return data;
 
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-
     }
 }
