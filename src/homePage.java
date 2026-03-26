@@ -76,6 +76,7 @@ public class homePage {
 
         for (String option : options) {
             JRadioButton rb = new JRadioButton(option);
+            rb.setActionCommand(option);
             rb.setFont(appTheme.fieldFont);
             rb.setForeground(appTheme.white);
             rb.setBackground(appTheme.backgroundColour);
@@ -90,10 +91,32 @@ public class homePage {
         mainPanel.add(headerPanel, BorderLayout.NORTH);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        // Footer with button to direct to admin login page
+        // Footer with button to direct to admin login page or to select city for
+        // weather forecast
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         footerPanel.setBackground(appTheme.backgroundColour);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+        JButton getForeCastButton = new JButton("Get Forecast");
+        getForeCastButton.setFont(appTheme.labelFont);
+        getForeCastButton.setBackground(appTheme.buttonColour);
+        getForeCastButton.setForeground(appTheme.white);
+        getForeCastButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String selectedCity = cityGroup.getSelection() != null ? cityGroup.getSelection().getActionCommand()
+                        : null;
+                if (selectedCity != null) {
+                    new forecastPage(selectedCity);
+                    frame.dispose();
+                } else {
+                    // Show an error message if no city is selected
+                    javax.swing.JOptionPane.showMessageDialog(frame, "Please select a city to get the forecast.",
+                            "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+
+                }
+            }
+        });
 
         JButton adminLoginButton = new JButton("Admin Login");
         adminLoginButton.setFont(appTheme.smallButtonFont);
@@ -107,6 +130,7 @@ public class homePage {
 
         });
 
+        footerPanel.add(getForeCastButton);
         footerPanel.add(adminLoginButton);
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
 

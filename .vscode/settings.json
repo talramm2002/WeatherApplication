@@ -2,7 +2,8 @@
     "java.project.sourcePaths": ["src"],
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
-        "lib/**/*.jar"
+        "lib/**/*.jar",
+        "c:\\Users\\talra\\Downloads\\gson-2.11.0.jar"
     ],
     "claudeCodeChat.permissions.yoloMode": false
 }
