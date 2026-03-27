@@ -58,10 +58,13 @@ public class forecastPage {
             protected void done() {
                 try {
                     WeatherData data = get();
-                    frame.getContentPane().removeAll(); // Cleaning loading screen to update with forecast UI
+                    // Cleaning loading screen to update with forecast UI
+                    frame.getContentPane().removeAll();
                     frame.add(buildUI(city, data, frame));
-                    frame.revalidate(); // Refreshing layout logic for new components
-                    frame.repaint(); // Forcing redraw to ensure all new components are rendered properly
+                    // Refreshing layout logic for new components
+                    frame.revalidate();
+                    // Forcing redraw to ensure all new components are rendered properly
+                    frame.repaint();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -69,7 +72,8 @@ public class forecastPage {
 
         };
 
-        worker.execute(); // Starting the background task
+        // Starting the background task
+        worker.execute();
     }
 
     private JPanel buildUI(String city, WeatherData data, JFrame frame) {
