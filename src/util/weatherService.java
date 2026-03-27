@@ -43,16 +43,22 @@ public class weatherService {
         public double[] rainChance;
     }
 
-    // Helper method to make an HTTP GET request and return the response as a string
+    // Helper method to make a HTTP GET request
     private static String makeRequest(String urlString) throws Exception {
         URL url = new URL(urlString);
+        // Opening the connection
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // Outlining request method, accepting only JSON for the scanner
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Accept", "application/json");
+        // Timeouts to prevent hanging if API is unresponsive
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(10000);
 
+        // Opening "pipe" to read the stream of bytes
         Scanner scanner = new Scanner(connection.getInputStream());
+        // Reading and appending lines into StringBuilder as long as there is a next
+        // line to read
         StringBuilder response = new StringBuilder();
         while (scanner.hasNextLine()) {
             response.append(scanner.nextLine());
@@ -65,7 +71,7 @@ public class weatherService {
     // API
     public static WeatherData getWeather(String city) {
         try {
-            // Look up coordinates for the city; if not found, return null
+            // Look up coordinates for the city
             double[] coords = cityGeoHash.get(city);
             if (coords == null)
                 return null;
@@ -86,27 +92,29 @@ public class weatherService {
 
             WeatherData data = new WeatherData();
 
+            // Validating JSON format and parsing response into WeatherData object
             JsonObject json = JsonParser.parseString(response).getAsJsonObject();
 
-            // Parse from "current" object
+            // Parse "current" object
             JsonObject current = json.getAsJsonObject("current");
             data.currentTemp = current.get("temperature_2m").getAsDouble();
             data.humidity = current.get("relative_humidity_2m").getAsInt();
 
-            // Parse from "daily" object
+            // Parse "daily" object
             JsonObject daily = json.getAsJsonObject("daily");
             JsonArray dates = daily.getAsJsonArray("time");
             JsonArray maxTemps = daily.getAsJsonArray("temperature_2m_max");
             JsonArray minTemps = daily.getAsJsonArray("temperature_2m_min");
             JsonArray rain = daily.getAsJsonArray("precipitation_probability_max");
 
+            // Initialise array to hold weather data
             int numDays = dates.size();
             data.dailyDates = new String[numDays];
             data.dailyMaxTemps = new double[numDays];
             data.dailyMinTemps = new double[numDays];
             data.rainChance = new double[numDays];
 
-            // Each field is its own array, not nested inside day objects
+            // Populate WeatherData arrays for each day
             for (int i = 0; i < numDays; i++) {
                 data.dailyDates[i] = dates.get(i).getAsString();
                 data.dailyMaxTemps[i] = maxTemps.get(i).getAsDouble();

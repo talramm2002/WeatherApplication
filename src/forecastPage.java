@@ -9,7 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.SwingWorker;
+import javax.swing.SwingWorker; // Used to run API call in background without freezing the UI
 
 import util.appTheme;
 import util.weatherService;
@@ -25,12 +25,13 @@ public class forecastPage {
             e.printStackTrace();
         }
 
-        // Created the main frame for the weather forecase page
+        // Created the main frame for the weather forecast page
         JFrame frame = new JFrame("Weather Forecast for " + city);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setMinimumSize(new java.awt.Dimension(900, 500));
 
-        // Show a loading screen immediately so the user knows something is happening
+        // Show a loading screen immediately so the user knows something is happening in
+        // the background
         JPanel loadingPanel = new JPanel(new BorderLayout());
         loadingPanel.setBackground(appTheme.backgroundColour);
 
@@ -44,39 +45,31 @@ public class forecastPage {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        // SwingWorker runs the API call on a background thread
+        // SwingWorker runs the API call in the background
         SwingWorker<WeatherData, Void> worker = new SwingWorker<WeatherData, Void>() {
 
             @Override
             protected WeatherData doInBackground() {
-                // This runs OFF the UI thread — safe to do slow network work here
                 return weatherService.getWeather(city);
             }
 
+            // Updating UI with fetched data once background task is complete
             @Override
             protected void done() {
                 try {
                     WeatherData data = get();
-                    frame.getContentPane().removeAll();
+                    frame.getContentPane().removeAll(); // Cleaning loading screen to update with forecast UI
                     frame.add(buildUI(city, data, frame));
-                    frame.revalidate();
-                    frame.repaint();
+                    frame.revalidate(); // Refreshing layout logic for new components
+                    frame.repaint(); // Forcing redraw to ensure all new components are rendered properly
                 } catch (Exception e) {
-                    e.printStackTrace(); // this already exists
-                    // ADDED — show the error on screen so you can see what went wrong
-                    JLabel errLabel = new JLabel("Error: " + e.getMessage(), JLabel.CENTER);
-                    errLabel.setFont(appTheme.fieldFont);
-                    errLabel.setForeground(appTheme.white);
-                    frame.getContentPane().removeAll();
-                    frame.getContentPane().add(errLabel);
-                    frame.revalidate();
-                    frame.repaint();
+                    e.printStackTrace();
                 }
             }
 
         };
 
-        worker.execute(); // kick it off
+        worker.execute(); // Starting the background task
     }
 
     private JPanel buildUI(String city, WeatherData data, JFrame frame) {
@@ -93,9 +86,13 @@ public class forecastPage {
         // Current conditions
         JPanel currentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
         currentPanel.setBackground(appTheme.buttonColour);
-        currentPanel.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
+        currentPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
         if (data != null) {
+            JLabel currentLabel = new JLabel("Current Conditions");
+            currentLabel.setFont(appTheme.labelFont);
+            currentLabel.setForeground(appTheme.white);
+            currentPanel.add(currentLabel);
             JLabel tempLabel = new JLabel("Temperature: " + data.currentTemp + "°C");
             JLabel humidLabel = new JLabel("Humidity: " + data.humidity + "%");
 
@@ -111,7 +108,7 @@ public class forecastPage {
             currentPanel.add(errorLabel);
         }
 
-        // 7-day forecast cards
+        // 7 day forecast cards
         JPanel forecastPanel = new JPanel(new GridLayout(7, 1, 0, 10));
         forecastPanel.setBackground(appTheme.backgroundColour);
         forecastPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -154,12 +151,11 @@ public class forecastPage {
         backWrapper.setBackground(appTheme.backgroundColour);
         backWrapper.add(backButton);
 
-        // Assemble
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(appTheme.backgroundColour);
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(currentPanel, BorderLayout.CENTER);
-        mainPanel.add(forecastPanel, BorderLayout.SOUTH);
+        // Assemble top section: header + current conditions
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(appTheme.backgroundColour);
+        topPanel.add(headerPanel, BorderLayout.NORTH);
+        topPanel.add(currentPanel, BorderLayout.SOUTH);
 
         // Added scroll feature, forecast cards take up a lot of vertical space
         JScrollPane scrollPanel = new JScrollPane(forecastPanel);
@@ -167,8 +163,14 @@ public class forecastPage {
         scrollPanel.getViewport().setBackground(appTheme.backgroundColour);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
         scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        // Assemble main layout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(appTheme.backgroundColour);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(scrollPanel, BorderLayout.CENTER);
 
+        // Final panel assembly
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(appTheme.backgroundColour);
         root.add(mainPanel, BorderLayout.CENTER);

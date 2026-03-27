@@ -3,7 +3,7 @@ package util;
 import java.awt.Color;
 import java.awt.Font;
 
-//This class defines the theme for the application, including colors and fonts
+// This class defines the theme for the application, including colors and fonts used throughout
 public class appTheme {
     public static final Color backgroundColour = new Color(30, 100, 160);
     public static final Color buttonColour = new Color(20, 75, 120);

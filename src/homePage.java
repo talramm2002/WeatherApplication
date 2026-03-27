@@ -47,7 +47,8 @@ public class homePage {
         contentHeaderLabel.setForeground(appTheme.white);
         contentPanel.add(contentHeaderLabel, BorderLayout.NORTH);
 
-        // Radio buttons to select city for weather forecast
+        // Radio buttons to select city for weather forecast set user selection for
+        // weather retrieval
         JPanel radioPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         radioPanel.setBackground(appTheme.backgroundColour);
 
@@ -114,21 +115,7 @@ public class homePage {
             }
         });
 
-        JButton adminLoginButton = new JButton("Admin Login");
-        adminLoginButton.setFont(appTheme.smallButtonFont);
-        adminLoginButton.setBackground(appTheme.buttonColour);
-        adminLoginButton.setForeground(appTheme.white);
-        adminLoginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                new adminLogin();
-                frame.dispose();
-            }
-
-        });
-
         footerPanel.add(getForeCastButton);
-        footerPanel.add(adminLoginButton);
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
 
         frame.add(mainPanel);
@@ -137,6 +124,7 @@ public class homePage {
         frame.setVisible(true);
     }
 
+    // Starting point of the application
     public static void main(String[] args) {
         SwingUtilities.invokeLater(homePage::new);
     }
