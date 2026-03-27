@@ -23,7 +23,7 @@ public class homePage {
             e.printStackTrace();
         }
 
-        JFrame frame = new JFrame("Weathermaxxing Home Page");
+        JFrame frame = new JFrame("WeatherMaxxing Home Page");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Header
@@ -31,7 +31,7 @@ public class homePage {
         headerPanel.setBackground(appTheme.backgroundColour);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        JLabel headerLabel = new JLabel("Welcome to Weathermaxxing!");
+        JLabel headerLabel = new JLabel("Welcome to WeatherMaxxing!");
         headerLabel.setFont(appTheme.titleFont);
         headerLabel.setForeground(appTheme.white);
         headerPanel.add(headerLabel);
