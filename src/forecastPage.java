@@ -18,7 +18,7 @@ import util.weatherService.WeatherData;
 public class forecastPage {
 
     public forecastPage(String city) {
-        // Set Nimbus look and feel for a modern UI appearance
+        // Set Nimbus look and feel for a more modern UI appearance
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {

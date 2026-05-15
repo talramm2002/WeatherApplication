@@ -9,14 +9,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import util.appTheme;
 
 public class homePage {
 
     public homePage() {
-        // Set Nimbus look and feel for a modern UI appearance
+        // Set Nimbus look and feel for a more modern UI appearance
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
@@ -122,10 +121,5 @@ public class homePage {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    // Starting point of the application
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(homePage::new);
     }
 }
